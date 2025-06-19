@@ -1,0 +1,91 @@
+
+* { margin:0; padding:0; box-sizing:border-box }
+body {
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh;
+  background: linear-gradient(135deg,#342b3e,#97a9c8);
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.container {
+  width: 380px;
+  background: rgba(54, 16, 16, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  overflow: hidden;
+  position: relative;
+}
+
+#cameraContainer {
+  display: none;
+  padding: 16px;
+  background: rgba(0,0,0,0.6);
+}
+#cameraContainer.active {
+  display: block;
+}
+#cameraContainer video {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.camera-controls {
+  margin-top: 8px;
+  text-align: right;
+}
+.camera-controls button {
+  margin-left: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+.camera-controls button:hover {
+  background: #eee;
+}
+
+.tabs { display:flex; }
+.tabs label {
+  flex:1; text-align:center; padding:16px; cursor:pointer;
+  background: rgba(255,255,255,0.2); transition:0.3s;
+  font-weight:500;
+}
+.tabs label:hover { background: rgba(255,255,255,0.3); }
+input[type="radio"] { display:none; }
+#tab-login:checked  ~ .tabs label[for="tab-login"],
+#tab-signup:checked ~ .tabs label[for="tab-signup"] {
+  background: rgba(255,255,255,0.4);
+}
+
+.forms { overflow:hidden; }
+.slider {
+  display:flex; width:200%; transition: transform .5s ease;
+}
+#tab-login:checked  ~ .forms .slider { transform: translateX(0);   }
+#tab-signup:checked ~ .forms .slider { transform: translateX(-50%); }
+
+.form {
+  width: 50%; padding:24px; box-sizing:border-box;
+}
+.form input {
+  width:100%; margin-bottom:16px; padding:12px;
+  border:none; border-radius:8px;
+  background: rgba(255,255,255,0.8);
+  /* white text for emojis */
+  color: #000000;
+  font-size: 1.2rem;
+  text-align: center;
+}
+.btn {
+  width:100%; padding:12px;
+  border:none; border-radius:8px;
+  background:#3962a8; color:#fff;
+  font-size:1rem; cursor:pointer;
+  transition:0.3s;
+}
+.btn:hover { background:#1a5ac0; }

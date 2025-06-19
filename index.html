@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Modern Camera-On Auth</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    
+    <div id="cameraContainer">
+      <video id="video" autoplay playsinline></video>
+      <div class="camera-controls">
+        <button type="button" id="takePhoto">📸 Take Photo</button>
+        <button type="button" id="closeCam">✕</button>
+      </div>
+      <canvas id="snapshot" style="display:none;"></canvas>
+    </div>
+
+    <input type="radio" id="tab-login"  name="tab" checked>
+    <input type="radio" id="tab-signup" name="tab">
+    <div class="tabs">
+      <label for="tab-login">Login</label>
+      <label for="tab-signup">Sign Up</label>
+    </div>
+
+    <div class="forms">
+      <div class="slider">
+        <form id="loginForm" class="form login">
+          <input id="loginUser" type="text" placeholder="Username" required>
+          <input id="pwdField" 
+                 type="text" 
+                 placeholder="Enter emoji password"
+                 readonly>
+          <button class="btn" type="submit">Log In</button>
+        </form>
+
+        <form id="signupForm" class="form signup">
+          <input id="signupUser" type="text" placeholder="Username" required>
+          <input id="signPwdField"
+                 type="text" 
+                 placeholder="Enter emoji password"
+                 readonly>
+          <input id="signConfirmField"
+                 type="text" 
+                 placeholder="Enter emoji password again"
+                 readonly>
+          <button class="btn" type="submit">Sign Up</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cameraContainer = document.getElementById('cameraContainer');
+    const videoEl         = document.getElementById('video');
+    const closeCamBtn     = document.getElementById('closeCam');
+    const takePhotoBtn    = document.getElementById('takePhoto');
+    const snapshotCanvas  = document.getElementById('snapshot');
+
+    let currentPwdField = null;
+    const pwdField      = document.getElementById('pwdField');
+    const signPwdField  = document.getElementById('signPwdField');
+    const signConfirm   = document.getElementById('signConfirmField');
+
+    [pwdField, signPwdField, signConfirm].forEach(el => {
+      el.addEventListener('click', () => {
+        currentPwdField = el;
+        startCamera();
+      });
+      el.addEventListener('keydown', e => {
+        if (e.key !== 'Backspace') e.preventDefault();
+      });
+    });
+
+    let stream = null;
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoEl.srcObject = stream;
+        cameraContainer.classList.add('active');
+      } catch {
+        alert('Cannot access camera.');
+      }
+    }
+    closeCamBtn.addEventListener('click', () => {
+      cameraContainer.classList.remove('active');
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    });
+
+    const emojiMap = {
+      neutral:   '😐',
+      happy:     '😃',
+      sad:       '😔',
+      angry:     '😠',
+      surprised: '😲',
+      disgusted: '🤢',
+      fearful:   '😨'
+    };
+    let modelsLoaded = false;
+    async function loadModels(){
+      await faceapi.nets.tinyFaceDetector.loadFromUri('./weights/');
+      await faceapi.nets.faceExpressionNet.loadFromUri('./weights/');
+      modelsLoaded = true;
+    }
+    window.addEventListener('load', loadModels);
+
+    takePhotoBtn.addEventListener('click', async () => {
+      if (!modelsLoaded) return alert('Models loading…');
+      if (!stream)        return alert('Start camera first!');
+      snapshotCanvas.width  = videoEl.videoWidth;
+      snapshotCanvas.height = videoEl.videoHeight;
+      snapshotCanvas.getContext('2d').drawImage(videoEl, 0, 0);
+
+      const det = await faceapi
+        .detectSingleFace(snapshotCanvas, new faceapi.TinyFaceDetectorOptions())
+        .withFaceExpressions();
+
+      if (det && det.expressions) {
+        const [top] = Object.entries(det.expressions)
+                            .sort((a,b)=>b[1]-a[1]);
+        const emoji = emojiMap[top[0]] || '❓';
+        currentPwdField.value = (currentPwdField.value || '') + emoji;
+      } else {
+        alert('No face detected – try again.');
+      }
+      closeCamBtn.click();
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const u = document.getElementById('loginUser').value.trim();
+      const p = pwdField.value;
+      if (!u)          return alert('Enter username.');
+      if (!p)          return alert('Record at least one emoji password!');
+      alert(`Logged in as ${u} with password "${p}"`);
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const u  = document.getElementById('signupUser').value.trim();
+      const p1 = signPwdField.value;
+      const p2 = signConfirm.value;
+      if (!u)               return alert('Choose a username.');
+      if (!p1 || !p2)       return alert('Record password emojis in both fields.');
+      if (p1 !== p2)        return alert('Passwords do not match!');
+      alert(`Account created for ${u}!`);
+      document.getElementById('tab-login').checked = true;
+      document.getElementById('loginUser').value = u;
+      pwdField.value = '';
+    });
+  </script>
+</body>
+</html>
