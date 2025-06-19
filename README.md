@@ -2,6 +2,8 @@
 
 **Your face is your password.** Emoji-Pass turns facial expressions into a sequence of emojis you “type” by snapping photos with your webcam.
 
+[**Use this link to preview**](https://kaadi2000.github.io/MugShot-Access/)
+
 ---
 
 ## Features
