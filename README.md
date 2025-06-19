@@ -1,4 +1,4 @@
-# Emoji-Pass
+# MugShot Access
 
 **Your face is your password.** Emoji-Pass turns facial expressions into a sequence of emojis you “type” by snapping photos with your webcam.
 
